@@ -453,6 +453,7 @@ class BuildingNet(data.Dataset):
 
         # a list of the model ids: ["COMMERCIALcastle_mesh0365"]
         self.obj_id_addr = os.path.join(config.DATA_PATH, 'train_split.txt')
+        self.obj_id_ignore_addr = os.path.join(config.DATA_PATH, 'train_split_ignore.txt')
 
         # a json dict maps  "COMMERCIALcastle_mesh0365" to ["COMMERCIAL" "castle"]
         self.text_label_addr = os.path.join(config.TEXT_LABEL_PATH, 'train_split_X_classname.json')
@@ -471,6 +472,14 @@ class BuildingNet(data.Dataset):
         for line in lines:
             self.obj_id.append(line.split('\n')[0])
         # print("obj id: ", self.obj_id)
+
+        self.obj_id_ignore = list()
+        with open(self.obj_id_ignore_addr, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            self.obj_id_ignore.append(line.split('\n')[0])
+
+        print("obj_id_ignore: ", self.obj_id_ignore)
 
         with open(self.text_label_addr, 'r') as f:
             self.text_label = json.load(f)

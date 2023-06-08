@@ -6,3 +6,4 @@ data/initialize_models.zip
 data/slip_base_100ep.pt
 data/modelnet40_normal_resampled
 data/modelnet40_normal_resampled.DS_Store
+._.DS_Store
