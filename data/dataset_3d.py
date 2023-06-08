@@ -27,12 +27,12 @@ from plyfile import PlyData
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-    print_log(f'[image: - pil_loader]', logger='BuildingNet')
+    # print_log(f'[image: - pil_loader]', logger='BuildingNet')
     with open(path, 'rb') as f:
     # with open(path, 'r') as f:
-        print_log(f'[image: - open success]', logger='BuildingNet')
+        # print_log(f'[image: - open success]', logger='BuildingNet')
         img = Image.open(f)
-        print_log(f'[image: - image open success]', logger='BuildingNet')
+        # print_log(f'[image: - image open success]', logger='BuildingNet')
         return img.convert('RGB')
 
 def pc_normalize(pc):
@@ -607,10 +607,10 @@ class BuildingNet(data.Dataset):
         # else:
         #     data = torch.from_numpy(data).float()
         test_text = self.text_label[model_name]
-        print("test_text: ", test_text)
-        print_log(f'[test_text] {test_text}', logger='BuildingNet')
+        # print("test_text: ", test_text)
+        # print_log(f'[test_text] {test_text}', logger='BuildingNet')
         captions = ','.join(self.text_label[model_name])
-        print_log(f'[captions] {captions}', logger='BuildingNet')
+        # print_log(f'[captions] {captions}', logger='BuildingNet')
         # captions = self.synset_id_map[sample['taxonomy_id']]['name']
         captions = [caption.strip() for caption in captions.split(',') if caption.strip()]
         caption = random.choice(captions)
@@ -639,16 +639,15 @@ class BuildingNet(data.Dataset):
                             random.choice(self.picked_image_type) + '.png'
 
         # picked_image_addr = r"{}".format(picked_image_addr)
-        print_log(f'[train_transform: - {type(self.train_transform)}]', logger='BuildingNet')
+        # print_log(f'[train_transform: - {type(self.train_transform)}]', logger='BuildingNet')
         try:
-            print_log(f'[image: - start try]', logger='BuildingNet')
             image = pil_loader(picked_image_addr)
-            print_log(f'[image: - {type(image)}] {image}', logger='BuildingNet')
             image = self.train_transform(image)
         except:
-            print_log(f'[image is corrupted] {picked_image_addr}', logger='BuildingNet')
+            # print_log(f'[image is corrupted] {picked_image_addr}', logger='BuildingNet')
             # return model_name, tokenized_captions, None, pc_data
             raise ValueError("image is corrupted: {}".format(picked_image_addr))
+
         return model_name, tokenized_captions, image, pc_data
         # return sample['taxonomy_id'], sample['model_id'], tokenized_captions, data, image
 
