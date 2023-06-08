@@ -1,0 +1,99 @@
+2023-06-08 02:53:57,490 - BuildingNet - INFO - [DATASET] sample out 8192 points
+2023-06-08 02:53:57,490 - BuildingNet - INFO - [DATASET] Open file data/s3_dataset/splits/test_split.txt
+2023-06-08 02:53:57,490 - BuildingNet - INFO - [DATASET] Open file data/s3_dataset/splits/test_split.txt
+2023-06-08 02:53:57,490 - BuildingNet - INFO - [DATASET] 362 instances were loaded
+Not using distributed mode
+=> creating model: ULIP_PN_MLP
+=> loaded resume checkpoint './data/pretrained_models/ckpt_zero-sho_classification/checkpoint_pointmlp.pt'
+using augmented point clouds.
+=> encoding captions
+2023-06-08 02:54:22,317 - BuildingNet - INFO - [test_text] ['RELIGIOUS', 'church']
+2023-06-08 02:54:22,317 - BuildingNet - INFO - [captions] RELIGIOUS,church
+2023-06-08 02:54:22,318 - BuildingNet - INFO - [test_text] ['RELIGIOUS', 'church']
+2023-06-08 02:54:22,318 - BuildingNet - INFO - [captions] RELIGIOUS,church
+2023-06-08 02:54:22,318 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,319 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,324 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,325 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,334 - BuildingNet - INFO - [test_text] ['RELIGIOUS', 'church']
+2023-06-08 02:54:22,334 - BuildingNet - INFO - [captions] RELIGIOUS,church
+2023-06-08 02:54:22,335 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F84845605E0>
+2023-06-08 02:54:22,335 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/RELIGIOUSchurch_mesh0259/OBJ_MODELS/OBJ_MODELS_r_324.png
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F8484559AC0>
+2023-06-08 02:54:22,336 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/RELIGIOUSchurch_mesh2147/OBJ_MODELS/OBJ_MODELS_r_348.png
+2023-06-08 02:54:22,341 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,355 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F8484560220>
+2023-06-08 02:54:22,355 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/RELIGIOUSchurch_mesh0981/OBJ_MODELS/OBJ_MODELS_r_072.png
+2023-06-08 02:54:22,388 - BuildingNet - INFO - [test_text] ['COMMERCIAL', 'office', 'building']
+2023-06-08 02:54:22,388 - BuildingNet - INFO - [captions] COMMERCIAL,office,building
+2023-06-08 02:54:22,390 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,390 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,390 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,390 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,395 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,398 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F8484568280>
+2023-06-08 02:54:22,398 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/COMMERCIALoffice_building_mesh1875/OBJ_MODELS/OBJ_MODELS_r_168_depth0001.png
+2023-06-08 02:54:22,405 - BuildingNet - INFO - [test_text] ['PUBLIC', 'palace']
+2023-06-08 02:54:22,405 - BuildingNet - INFO - [captions] PUBLIC,palace
+2023-06-08 02:54:22,406 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,406 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,407 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,407 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,412 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,414 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F8484560A00>
+2023-06-08 02:54:22,414 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/PUBLICpalace_mesh1165/OBJ_MODELS/OBJ_MODELS_r_192_depth0001.png
+2023-06-08 02:54:22,645 - BuildingNet - INFO - [test_text] ['COMMERCIAL', 'castle']
+2023-06-08 02:54:22,646 - BuildingNet - INFO - [captions] COMMERCIAL,castle
+2023-06-08 02:54:22,647 - BuildingNet - INFO - [train_transform: - <class 'NoneType'>]
+2023-06-08 02:54:22,647 - BuildingNet - INFO - [image: - start try]
+2023-06-08 02:54:22,647 - BuildingNet - INFO - [image: - pil_loader]
+2023-06-08 02:54:22,647 - BuildingNet - INFO - [image: - open success]
+2023-06-08 02:54:22,653 - BuildingNet - INFO - [image: - image open success]
+2023-06-08 02:54:22,664 - BuildingNet - INFO - [image: - <class 'PIL.Image.Image'>] <PIL.Image.Image image mode=RGB size=600x600 at 0x7F8484568DF0>
+2023-06-08 02:54:22,664 - BuildingNet - INFO - [image is corrupted] data/s3_dataset/rendered_images/train_split/BuildingNet-v1/COMMERCIALcastle_mesh0365/OBJ_MODELS/OBJ_MODELS_r_276.png
+Traceback (most recent call last):
+  File "main.py", line 562, in <module>
+    main(args)
+  File "main.py", line 104, in main
+    zero_stats = test_zeroshot_3d(args)
+  File "main.py", line 480, in test_zeroshot_3d
+    results = test_zeroshot_3d_core(test_loader, model, tokenizer, args)
+  File "main.py", line 401, in test_zeroshot_3d_core
+    for i, (pc, target, target_name) in enumerate(test_loader):
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 628, in __next__
+    data = self._next_data()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1333, in _next_data
+    return self._process_data(data)
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1359, in _process_data
+    data.reraise()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/_utils.py", line 543, in reraise
+    raise exception
+ValueError: Caught ValueError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/ubuntu/cs231n/ULIP_multi_modal/data/dataset_3d.py", line 647, in __getitem__
+    image = self.train_transform(image)
+TypeError: 'NoneType' object is not callable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/ubuntu/cs231n/ULIP_multi_modal/data/dataset_3d.py", line 651, in __getitem__
+    raise ValueError("image is corrupted: {}".format(picked_image_addr))
+ValueError: image is corrupted: data/s3_dataset/rendered_images/train_split/BuildingNet-v1/COMMERCIALcastle_mesh0365/OBJ_MODELS/OBJ_MODELS_r_276.png
+

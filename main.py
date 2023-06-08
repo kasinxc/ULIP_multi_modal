@@ -175,6 +175,7 @@ def main(args):
             transforms.ToTensor(),
             normalize
         ])
+    print_log(f'[main.py: - {type(train_transform)}]', logger='BuildingNet')
 
     train_dataset = get_dataset(train_transform, tokenizer, args, 'train')
     val_dataset = get_dataset(None, tokenizer, args, 'val')
@@ -286,10 +287,20 @@ def train(train_loader, model, criterion, optimizer, scaler, epoch, lr_schedule,
         for k, param_group in enumerate(optimizer.param_groups):
             param_group['lr'] = lr_schedule[it]
 
-        pc = inputs[3]
-        texts = inputs[2]
+        # pc = inputs[3]
+        # texts = inputs[2]
 
-        image = inputs[4]
+        # image = inputs[4]
+
+        model_name = inputs[0]
+        text = inputs[1]
+        image = inputs[2]
+        pc = inputs[3]
+        # (coords, feat, label) = pc_data 
+
+        print_log(f'[main.py] pc tensor: {pc}', logger='BuildingNet')
+        print_log(f'[main.py] texts tensor: {texts}', logger='BuildingNet')
+        print_log(f'[main.py] image tensor: {image}', logger='BuildingNet')
         inputs = [pc, texts, image]
 
         inputs = [tensor.cuda(args.gpu, non_blocking=True) for tensor in inputs]
@@ -358,8 +369,21 @@ def test_zeroshot_3d_core(test_loader, model, tokenizer, args=None):
     with open(os.path.join("./data", 'templates.json')) as f:
         templates = json.load(f)[args.validate_dataset_prompt]
 
-    with open(os.path.join("./data", 'labels.json')) as f:
-        labels = json.load(f)[args.validate_dataset_name]
+    # with open(os.path.join("./data", 'labels.json')) as f:
+    #     labels = json.load(f)[args.validate_dataset_name]
+    with open(os.path.join("./data/s3_dataset/text_outputs/only_classname/val_split_X_classname.json")) as f:
+        # a dict of model_name to [list mapping]
+        labels_json = json.load(f)
+    labels = list()
+    for key, label_list in labels_json.items():
+        # 
+        if len(label_list) == 1:
+            labels.append(label_list[0])
+        elif len(label_list) == 2:
+            labels.append(label_list[1])
+        else: # len = 3
+            labels.append(label_list[1])
+
 
 
     with torch.no_grad():

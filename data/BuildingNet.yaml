@@ -1,0 +1,5 @@
+NAME: BuildingNet
+DATA_PATH: data/s3_dataset/splits
+TEXT_LABEL_PATH: data/s3_dataset/text_outputs/only_classname
+PC_PATH: data/s3_dataset/POINT_CLOUDS
+IMAGE_PATH: data/s3_dataset/rendered_images/train_split/BuildingNet-v1

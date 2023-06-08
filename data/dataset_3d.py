@@ -23,11 +23,16 @@ import json
 from tqdm import tqdm
 import pickle
 from PIL import Image
+from plyfile import PlyData
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+    print_log(f'[image: - pil_loader]', logger='BuildingNet')
     with open(path, 'rb') as f:
+    # with open(path, 'r') as f:
+        print_log(f'[image: - open success]', logger='BuildingNet')
         img = Image.open(f)
+        print_log(f'[image: - image open success]', logger='BuildingNet')
         return img.convert('RGB')
 
 def pc_normalize(pc):
@@ -432,6 +437,224 @@ class ShapeNet(data.Dataset):
 
     def __len__(self):
         return len(self.file_list)
+
+
+@DATASETS.register_module()
+class BuildingNet(data.Dataset):
+    def __init__(self, config):
+
+        self.data_root = config.DATA_PATH
+        self.pc_path = config.PC_PATH
+        self.subset = config.subset
+        self.npoints = config.npoints
+        self.tokenizer = config.tokenizer
+        self.train_transform = config.train_transform
+        # self.id_map_addr = os.path.join(config.DATA_PATH, 'taxonomy.json')
+
+        # a list of the model ids: ["COMMERCIALcastle_mesh0365"]
+        self.obj_id_addr = os.path.join(config.DATA_PATH, 'train_split.txt')
+
+        # a json dict maps  "COMMERCIALcastle_mesh0365" to ["COMMERCIAL" "castle"]
+        self.text_label_addr = os.path.join(config.TEXT_LABEL_PATH, 'train_split_X_classname.json')
+
+        self.rendered_image_addr = config.IMAGE_PATH
+        self.picked_image_type = ['', '_depth0001']
+        self.picked_rotation_degrees = list(range(0, 360, 12))
+        self.picked_rotation_degrees = [(3 - len(str(degree))) * '0' + str(degree) if len(str(degree)) < 3 else str(degree) for degree in self.picked_rotation_degrees]
+
+        # with open(self.id_map_addr, 'r') as f:
+        #     self.id_map = json.load(f)
+
+        self.obj_id = list()
+        with open(self.obj_id_addr, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            self.obj_id.append(line.split('\n')[0])
+        # print("obj id: ", self.obj_id)
+
+        with open(self.text_label_addr, 'r') as f:
+            self.text_label = json.load(f)
+
+        self.prompt_template_addr = os.path.join('./data/templates.json')
+        with open(self.prompt_template_addr) as f:
+            self.templates = json.load(f)[config.pretrain_dataset_prompt]
+
+        # print("prompt loaded, Yayyyyy!")
+        # first_key = next(iter(self.text_label)) 
+        # print("first_key: ", first_key)
+        # print("loading text classname: ", self.text_label[first_key])
+
+
+        # self.synset_id_map = {}
+        # for id_dict in self.id_map:
+        #     synset_id = id_dict["synsetId"]
+        #     self.synset_id_map[synset_id] = id_dict
+
+        self.data_list_file = os.path.join(self.data_root, f'{self.subset}_split.txt')
+       
+        # a txt file of all .npy files - test.txt
+        test_data_list_file = os.path.join(self.data_root, 'test_split.txt')
+
+        self.sample_points_num = self.npoints
+        self.whole = config.get('whole')
+
+        print_log(f'[DATASET] sample out {self.sample_points_num} points', logger='BuildingNet')
+        print_log(f'[DATASET] Open file {self.data_list_file}', logger='BuildingNet')
+        with open(self.data_list_file, 'r') as f:
+            lines = f.readlines()
+        if self.whole:
+            with open(test_data_list_file, 'r') as f:
+                test_lines = f.readlines()
+            print_log(f'[DATASET] Open file {test_data_list_file}', logger='BuildingNet')
+            lines = test_lines + lines
+        self.file_list = []
+        for line in lines:
+            line = line.strip()
+            taxonomy_id = line.split('-')[0]
+            model_id = line[len(taxonomy_id) + 1:].split('.')[0]
+            self.file_list.append({
+                'taxonomy_id': taxonomy_id,
+                'model_id': model_id,
+                'file_path': line
+            })
+        print_log(f'[DATASET] {len(self.file_list)} instances were loaded', logger='BuildingNet')
+
+        self.permutation = np.arange(self.npoints)
+
+        self.uniform = True
+        self.augment = True
+        self.use_caption_templates = False
+        # =================================================
+        # TODO: disable for backbones except for PointNEXT!!!
+        self.use_height = config.use_height
+        # =================================================
+
+        if self.augment:
+            print("using augmented point clouds.")
+    
+    def load_ply(self, pc_file_path, input_feat="rgb"):
+        # filepath = os.path.join(self.data_root, self.data_paths[index])
+        filepath = pc_file_path
+        plydata = PlyData.read(filepath)
+        data = plydata.elements[0].data
+        coords = np.array([data["x"], data["y"], data["z"]], dtype=np.float32).T
+        feats = np.full((coords.shape[0], 1), -1)
+        if input_feat == "rgb":
+            feats = np.array([data["red"], data["green"], data["blue"]], dtype=np.float32).T
+        elif input_feat == "normals":
+            feats = np.array([data["nx"], data["ny"], data["nz"]], dtype=np.float32).T
+        elif input_feat == "normals_rgb":
+            feats = np.array([data["nx"], data["ny"], data["nz"], data["red"], data["green"], data["blue"]],
+                             dtype=np.float32).T
+        labels = np.full((coords.shape[0], 1), -1).astype(np.int32)
+        vertex_properties = [p.name for p in plydata["vertex"].properties]
+        if "label" in vertex_properties:
+            labels = np.array(data["label"], dtype=np.int32)
+        return coords, feats, labels
+
+    def pc_norm(self, pc):
+        """ pc: NxC, return NxC """
+        centroid = np.mean(pc, axis=0)
+        pc = pc - centroid
+        m = np.max(np.sqrt(np.sum(pc ** 2, axis=1)))
+        pc = pc / m
+        return pc
+
+    def random_sample(self, pc, num):
+        np.random.shuffle(self.permutation)
+        pc = pc[self.permutation[:num]]
+        return pc
+
+    def __getitem__(self, idx):
+        # sample = self.file_list[idx]
+            
+        model_name = self.obj_id[idx]
+        model_name_file = model_name + '.ply'
+        
+        #################################
+        # Generate Point Cloud Triplets #
+        #################################
+        # get pc file
+        pc_file_path = os.path.join(self.pc_path, model_name_file)
+
+        coords, feats, labels = self.load_ply(pc_file_path, input_feat="rgb")
+        pc_data = (coords, feats, labels)
+        # data = IO.get(os.path.join(self.pc_path, model_name_file)).astype(np.float32)
+
+                #################################################################################
+                # Since we are not loading tensors, there's no sample, pc_norm, aug, use_height #
+                #################################################################################
+        # if self.uniform and self.sample_points_num < data.shape[0]:
+        #     data = farthest_point_sample(data, self.sample_points_num)
+        # else:
+        #     data = self.random_sample(data, self.sample_points_num)
+        # data = self.pc_norm(data)
+
+        # if self.augment:
+        #     data = random_point_dropout(data[None, ...])
+        #     data = random_scale_point_cloud(data)
+        #     data = shift_point_cloud(data)
+        #     data = rotate_perturbation_point_cloud(data)
+        #     data = rotate_point_cloud(data)
+        #     data = data.squeeze()
+
+        # if self.use_height:
+        #     self.gravity_dim = 1
+        #     height_array = data[:, self.gravity_dim:self.gravity_dim + 1] - data[:,
+        #                                                                self.gravity_dim:self.gravity_dim + 1].min()
+        #     data = np.concatenate((data, height_array), axis=1)
+        #     data = torch.from_numpy(data).float()
+        # else:
+        #     data = torch.from_numpy(data).float()
+        test_text = self.text_label[model_name]
+        print("test_text: ", test_text)
+        print_log(f'[test_text] {test_text}', logger='BuildingNet')
+        captions = ','.join(self.text_label[model_name])
+        print_log(f'[captions] {captions}', logger='BuildingNet')
+        # captions = self.synset_id_map[sample['taxonomy_id']]['name']
+        captions = [caption.strip() for caption in captions.split(',') if caption.strip()]
+        caption = random.choice(captions)
+        captions = []
+        tokenized_captions = []
+        if self.use_caption_templates:
+            for template in self.templates:
+                caption = template.format(caption)
+                captions.append(caption)
+                tokenized_captions.append(self.tokenizer(caption))
+        else:
+            tokenized_captions.append(self.tokenizer(caption))
+
+        tokenized_captions = torch.stack(tokenized_captions)
+        
+        # picked_model_rendered_image_addr = self.rendered_image_addr + '/' +\
+        #                                    model_name  + '/OBJ_MODELS/OBJ_MODELS_'
+        # picked_image_name = sample['taxonomy_id'] + '-' + sample['model_id'] + '_r_' +\
+        #                     str(random.choice(self.picked_rotation_degrees)) +\
+        #                     random.choice(self.picked_image_type) + '.png'
+        # picked_image_addr = picked_model_rendered_image_addr + picked_image_name
+
+        picked_image_addr = self.rendered_image_addr + '/' +\
+                                           model_name  + '/OBJ_MODELS/OBJ_MODELS' + '_r_' +\
+                            str(random.choice(self.picked_rotation_degrees)) +\
+                            random.choice(self.picked_image_type) + '.png'
+
+        # picked_image_addr = r"{}".format(picked_image_addr)
+        print_log(f'[train_transform: - {type(self.train_transform)}]', logger='BuildingNet')
+        try:
+            print_log(f'[image: - start try]', logger='BuildingNet')
+            image = pil_loader(picked_image_addr)
+            print_log(f'[image: - {type(image)}] {image}', logger='BuildingNet')
+            image = self.train_transform(image)
+        except:
+            print_log(f'[image is corrupted] {picked_image_addr}', logger='BuildingNet')
+            # return model_name, tokenized_captions, None, pc_data
+            raise ValueError("image is corrupted: {}".format(picked_image_addr))
+        return model_name, tokenized_captions, image, pc_data
+        # return sample['taxonomy_id'], sample['model_id'], tokenized_captions, data, image
+
+    def __len__(self):
+        return len(self.file_list)
+
 
 import collections.abc as container_abcs
 int_classes = int

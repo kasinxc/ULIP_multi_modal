@@ -1,0 +1,7 @@
+data/s3_dataset
+data/POINT_CLOUDS-s3.zip
+data/pretrained_models
+data/initialize_models
+data/initialize_models.zip
+data/slip_base_100ep.pt
+data/modelnet40_normal_resampled

@@ -1,0 +1,15 @@
+Not using distributed mode
+=> creating model: ULIP_VITB16
+2023-06-07 04:13:08,715 - ModelNet - INFO - The size of test data is 2468
+2023-06-07 04:13:08,715 - ModelNet - INFO - Load processed data from data/modelnet40_normal_resampled/modelnet40_test_8192pts_fps.dat...
+=> loaded resume checkpoint './data/pretrained_models/ckpt_zero-sho_classification/checkpoint_pointbert.pt'
+=> encoding captions
+Test: [ 0/39]	Time  3.795 ( 3.795)	Acc@1 100.00 (100.00)	Acc@5 100.00 (100.00)
+Test: [10/39]	Time  1.153 ( 1.390)	Acc@1  90.62 ( 90.77)	Acc@5 100.00 ( 99.57)
+Test: [20/39]	Time  1.156 ( 1.278)	Acc@1  53.12 ( 68.38)	Acc@5  82.81 ( 92.71)
+Test: [30/39]	Time  1.163 ( 1.239)	Acc@1  85.94 ( 62.65)	Acc@5  96.88 ( 86.84)
+airplane,bathtub,bed,bench,bookshelf,bottle,bowl,car,chair,cone,cup,curtain,desk,door,dresser,flower_pot,glass_box,guitar,keyboard,lamp,laptop,mantel,monitor,night_stand,person,piano,plant,radio,range_hood,sink,sofa,stairs,stool,table,tent,toilet,tv_stand,vase,wardrobe,xbox
+1.0,0.8,0.84,0.85,0.81,0.99,0.95,0.96,0.92,0.8,0.45,0.4,0.16279069767441862,0.8,0.7093023255813954,0.55,0.35,0.0,0.85,0.95,1.0,0.51,0.56,0.0,0.8,0.95,0.47,0.55,0.02,0.35,0.97,0.45,0.4,0.98,0.8,0.57,0.0,0.65,0.0,0.0
+1.0,1.0,0.99,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.9,0.7790697674418605,1.0,0.9534883720930233,0.95,0.83,0.68,1.0,0.95,1.0,0.82,0.98,0.06976744186046512,1.0,0.97,0.98,0.95,0.26,1.0,1.0,0.85,0.95,1.0,1.0,0.93,0.03,0.97,0.5,0.3
+0-shot * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}
+{'acc1': 60.3322528363047, 'acc5': 84.03565636484898}
