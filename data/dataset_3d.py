@@ -466,20 +466,23 @@ class BuildingNet(data.Dataset):
         # with open(self.id_map_addr, 'r') as f:
         #     self.id_map = json.load(f)
 
+        self.obj_id_ignore = set()
+        with open(self.obj_id_ignore_addr, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            self.obj_id_ignore.add(line.split('\n')[0])
+
+        print("obj_id_ignore: ", self.obj_id_ignore)
+
         self.obj_id = list()
         with open(self.obj_id_addr, 'r') as f:
             lines = f.readlines()
         for line in lines:
-            self.obj_id.append(line.split('\n')[0])
+            building_model_name = line.split('\n')[0]
+            if not building_model_name in self.obj_id_ignore:
+                self.obj_id.append(building_model_name)
         # print("obj id: ", self.obj_id)
 
-        self.obj_id_ignore = list()
-        with open(self.obj_id_ignore_addr, 'r') as f:
-            lines = f.readlines()
-        for line in lines:
-            self.obj_id_ignore.append(line.split('\n')[0])
-
-        print("obj_id_ignore: ", self.obj_id_ignore)
 
         with open(self.text_label_addr, 'r') as f:
             self.text_label = json.load(f)
@@ -502,7 +505,7 @@ class BuildingNet(data.Dataset):
         self.data_list_file = os.path.join(self.data_root, f'{self.subset}_split.txt')
        
         # a txt file of all .npy files - test.txt
-        test_data_list_file = os.path.join(self.data_root, 'test_split.txt')
+        test_data_list_file = os.path.join(self.data_root, 'val_split.txt')
 
         self.sample_points_num = self.npoints
         self.whole = config.get('whole')
@@ -519,13 +522,14 @@ class BuildingNet(data.Dataset):
         self.file_list = []
         for line in lines:
             line = line.strip()
-            taxonomy_id = line.split('-')[0]
-            model_id = line[len(taxonomy_id) + 1:].split('.')[0]
-            self.file_list.append({
-                'taxonomy_id': taxonomy_id,
-                'model_id': model_id,
-                'file_path': line
-            })
+            model_id = line.split('\n')[0]
+            self.file_list.append(model_id)
+            # model_id = line[len(taxonomy_id) + 1:].split('.')[0]
+        #     self.file_list.append({
+        #         'taxonomy_id': taxonomy_id,
+        #         'model_id': model_id,
+        #         'file_path': line
+        #     })
         print_log(f'[DATASET] {len(self.file_list)} instances were loaded', logger='BuildingNet')
 
         self.permutation = np.arange(self.npoints)
@@ -587,34 +591,49 @@ class BuildingNet(data.Dataset):
         pc_file_path = os.path.join(self.pc_path, model_name_file)
 
         coords, feats, labels = self.load_ply(pc_file_path, input_feat="rgb")
-        pc_data = (coords, feats, labels)
+        # pc_data = (coords, feats, labels)
+
+        ######################################
+        # Convert coords / feat to pc tensor #
+        ######################################
+
+        # coords = np.concatenate((coords, feat), 1)
+        # pc_data = torch.from_numpy(coords)
+        data = coords
+
         # data = IO.get(os.path.join(self.pc_path, model_name_file)).astype(np.float32)
 
                 #################################################################################
                 # Since we are not loading tensors, there's no sample, pc_norm, aug, use_height #
                 #################################################################################
-        # if self.uniform and self.sample_points_num < data.shape[0]:
-        #     data = farthest_point_sample(data, self.sample_points_num)
-        # else:
-        #     data = self.random_sample(data, self.sample_points_num)
-        # data = self.pc_norm(data)
 
-        # if self.augment:
-        #     data = random_point_dropout(data[None, ...])
-        #     data = random_scale_point_cloud(data)
-        #     data = shift_point_cloud(data)
-        #     data = rotate_perturbation_point_cloud(data)
-        #     data = rotate_point_cloud(data)
-        #     data = data.squeeze()
+        if self.uniform and self.sample_points_num < data.shape[0]:
+            data = farthest_point_sample(data, self.sample_points_num)
+        else:
+            data = self.random_sample(data, self.sample_points_num)
+        data = self.pc_norm(data)
 
-        # if self.use_height:
-        #     self.gravity_dim = 1
-        #     height_array = data[:, self.gravity_dim:self.gravity_dim + 1] - data[:,
-        #                                                                self.gravity_dim:self.gravity_dim + 1].min()
-        #     data = np.concatenate((data, height_array), axis=1)
-        #     data = torch.from_numpy(data).float()
-        # else:
-        #     data = torch.from_numpy(data).float()
+        if self.augment:
+            data = random_point_dropout(data[None, ...])
+            data = random_scale_point_cloud(data)
+            data = shift_point_cloud(data)
+            data = rotate_perturbation_point_cloud(data)
+            data = rotate_point_cloud(data)
+            data = data.squeeze()
+
+        if self.use_height:
+            self.gravity_dim = 1
+            height_array = data[:, self.gravity_dim:self.gravity_dim + 1] - data[:,
+                                                                       self.gravity_dim:self.gravity_dim + 1].min()
+            data = np.concatenate((data, height_array), axis=1)
+            data = torch.from_numpy(data).float()
+        else:
+            data = torch.from_numpy(data).float()
+
+                #################################################################################
+                # Finish preprocessing the tensors#
+                #################################################################################
+    
         test_text = self.text_label[model_name]
         # print("test_text: ", test_text)
         # print_log(f'[test_text] {test_text}', logger='BuildingNet')
@@ -657,7 +676,8 @@ class BuildingNet(data.Dataset):
             # return model_name, tokenized_captions, None, pc_data
             raise ValueError("image is corrupted: {}".format(picked_image_addr))
 
-        return model_name, tokenized_captions, image, pc_data
+        # data is for point cloud (pc_data - numpy)
+        return model_name, tokenized_captions, image, data
         # return sample['taxonomy_id'], sample['model_id'], tokenized_captions, data, image
 
     def __len__(self):
@@ -681,7 +701,8 @@ def customized_collate_fn(batch):
     elem_type = type(elem)
 
     if isinstance(batch, list):
-        batch = [example for example in batch if example[4] is not None]
+        batch = [example for example in batch if example[2] is not None]
+        # batch = [example for example in batch]
 
     if isinstance(elem, torch.Tensor):
         out = None
@@ -691,6 +712,7 @@ def customized_collate_fn(batch):
             numel = sum([x.numel() for x in batch])
             storage = elem.storage()._new_shared(numel)
             out = elem.new(storage)
+        # /home/ubuntu/cs231n/ULIP_multi_modal/data/dataset_3d.py:698: UserWarning: An output with one or more elements was resized since it had shape [19200000], which does not match the required output shape [64, 100000, 3]. This behavior is deprecated, and in a future PyTorch release outputs will not be resized unless they have zero elements. You can explicitly reuse an out tensor t by resizing it, inplace, to zero elements with t.resize_(0). (Triggered internally at ../aten/src/ATen/native/Resize.cpp:17.)
         return torch.stack(batch, 0, out=out)
     elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
             and elem_type.__name__ != 'string_':
